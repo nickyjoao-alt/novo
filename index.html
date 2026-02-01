@@ -3,46 +3,71 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gerador Pedagógico Pro</title>
+    <title>Gerador Solariza - Atividades IA</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; display: flex; justify-content: center; padding: 20px; }
-        .container { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 100%; max-width: 500px; }
-        h2 { color: #1a73e8; text-align: center; }
-        .campo { margin-bottom: 15px; }
-        label { display: block; font-weight: bold; margin-bottom: 5px; }
-        input, select, textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
-        button { width: 100%; padding: 15px; background: #1a73e8; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: bold; }
-        #resultado { margin-top: 20px; padding: 20px; border: 1px solid #ddd; border-radius: 8px; display: none; background: #fff; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; display: flex; justify-content: center; padding: 20px; }
+        .saas-card { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 600px; }
+        h2 { color: #1a73e8; text-align: center; margin-bottom: 25px; }
+        .campo { margin-bottom: 18px; }
+        label { display: block; font-weight: bold; margin-bottom: 8px; color: #444; }
+        input, select, textarea { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 14px; }
+        button { width: 100%; padding: 15px; background: #1a73e8; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: bold; transition: 0.3s; }
+        button:hover { background: #1557b0; }
+        #bloco_resultado { margin-top: 25px; display: none; }
+        .preview-area { background: #fff; padding: 20px; border: 1px solid #eee; border-left: 5px solid #1a73e8; border-radius: 4px; min-height: 150px; white-space: pre-wrap; margin-bottom: 15px; }
+        .botoes-download { display: flex; gap: 10px; }
+        .btn-pdf { background: #e74c3c; flex: 1; }
+        .btn-word { background: #2ecc71; flex: 1; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h2>🚀 Gerador de Atividades</h2>
+    <div class="saas-card">
+        <h2>🚀 Gerador de Atividades Solariza</h2>
+        
         <div class="campo">
-            <label>Nível</label>
-            <select id="nivel"><option>Educação Infantil</option><option>Fundamental I</option></select>
+            <label>Nível de Ensino</label>
+            <select id="nivel">
+                <option>Educação Infantil</option>
+                <option>Ensino Fundamental I</option>
+                <option>Ensino Fundamental II</option>
+            </select>
         </div>
+
         <div class="campo">
             <label>Disciplina</label>
-            <input type="text" id="disciplina">
+            <input type="text" id="disciplina" placeholder="Ex: Matemática, Português...">
         </div>
+
         <div class="campo">
-            <label>Tema</label>
-            <input type="text" id="tema">
+            <label>Tema da Aula</label>
+            <input type="text" id="tema" placeholder="Ex: Adição, Sistema Solar...">
         </div>
+
         <div class="campo">
-            <label>Instruções</label>
-            <textarea id="resumo" rows="4"></textarea>
+            <label>Instruções Adicionais</label>
+            <textarea id="resumo" rows="3" placeholder="Ex: Crie um texto e 3 perguntas..."></textarea>
         </div>
-        <button onclick="gerar()" id="btn">Gerar Atividade</button>
-        <div id="resultado"></div>
+
+        <button onclick="gerarAtividade()" id="btn_gerar">✨ Gerar Material Agora</button>
+
+        <div id="bloco_resultado">
+            <div id="resultado_texto" class="preview-area"></div>
+            <div class="botoes-download">
+                <button onclick="baixarPDF()" class="btn-pdf">📄 Baixar PDF</button>
+                <button onclick="baixarWord()" class="btn-word">📝 Baixar Word</button>
+            </div>
+        </div>
     </div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
     <script>
-        async function gerar() {
-            const btn = document.getElementById('btn');
-            const resDiv = document.getElementById('resultado');
-            btn.innerText = "⏳ Criando...";
+        async function gerarAtividade() {
+            const btn = document.getElementById('btn_gerar');
+            const bloco = document.getElementById('bloco_resultado');
+            const display = document.getElementById('resultado_texto');
+            
+            btn.innerText = "⏳ Criando sua atividade...";
             btn.disabled = true;
 
             const dados = {
@@ -53,21 +78,49 @@
             };
 
             try {
-                // Como está tudo na Vercel, usamos o caminho relativo! Adeus erro de CORS.
+                // COMO ESTÁ TUDO NA VERCEL, O CAMINHO É DIRETO!
                 const response = await fetch('/api/gerar', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(dados)
                 });
+                
                 const data = await response.json();
-                resDiv.innerHTML = data.content;
-                resDiv.style.display = 'block';
+                
+                if (data.content) {
+                    display.innerHTML = data.content;
+                    bloco.style.display = 'block';
+                } else {
+                    alert("Erro: A IA não enviou conteúdo.");
+                }
             } catch (e) {
-                alert("Erro ao conectar com a IA.");
+                alert("Erro de conexão com o servidor.");
             } finally {
-                btn.innerText = "Gerar Atividade";
+                btn.innerText = "✨ Gerar Material Agora";
                 btn.disabled = false;
             }
+        }
+
+        function baixarPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            const texto = document.getElementById('resultado_texto').innerText;
+            doc.setFontSize(16);
+            doc.text("ATIVIDADE PEDAGÓGICA - SOLARIZA", 10, 20);
+            doc.setFontSize(12);
+            const linhas = doc.splitTextToSize(texto, 180);
+            doc.text(linhas, 10, 35);
+            doc.save("atividade_solariza.pdf");
+        }
+
+        function baixarWord() {
+            const texto = document.getElementById('resultado_texto').innerText;
+            const blob = new Blob(['\ufeff' + texto], { type: 'application/msword' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'atividade_editavel.doc';
+            a.click();
         }
     </script>
 </body>
