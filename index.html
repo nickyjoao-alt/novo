@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerador Pedagógico Pro</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; display: flex; justify-content: center; padding: 20px; }
+        .container { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 100%; max-width: 500px; }
+        h2 { color: #1a73e8; text-align: center; }
+        .campo { margin-bottom: 15px; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; }
+        input, select, textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
+        button { width: 100%; padding: 15px; background: #1a73e8; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: bold; }
+        #resultado { margin-top: 20px; padding: 20px; border: 1px solid #ddd; border-radius: 8px; display: none; background: #fff; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>🚀 Gerador de Atividades</h2>
+        <div class="campo">
+            <label>Nível</label>
+            <select id="nivel"><option>Educação Infantil</option><option>Fundamental I</option></select>
+        </div>
+        <div class="campo">
+            <label>Disciplina</label>
+            <input type="text" id="disciplina">
+        </div>
+        <div class="campo">
+            <label>Tema</label>
+            <input type="text" id="tema">
+        </div>
+        <div class="campo">
+            <label>Instruções</label>
+            <textarea id="resumo" rows="4"></textarea>
+        </div>
+        <button onclick="gerar()" id="btn">Gerar Atividade</button>
+        <div id="resultado"></div>
+    </div>
+
+    <script>
+        async function gerar() {
+            const btn = document.getElementById('btn');
+            const resDiv = document.getElementById('resultado');
+            btn.innerText = "⏳ Criando...";
+            btn.disabled = true;
+
+            const dados = {
+                nivel: document.getElementById('nivel').value,
+                disciplina: document.getElementById('disciplina').value,
+                tema: document.getElementById('tema').value,
+                resumo: document.getElementById('resumo').value
+            };
+
+            try {
+                // Como está tudo na Vercel, usamos o caminho relativo! Adeus erro de CORS.
+                const response = await fetch('/api/gerar', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(dados)
+                });
+                const data = await response.json();
+                resDiv.innerHTML = data.content;
+                resDiv.style.display = 'block';
+            } catch (e) {
+                alert("Erro ao conectar com a IA.");
+            } finally {
+                btn.innerText = "Gerar Atividade";
+                btn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>
